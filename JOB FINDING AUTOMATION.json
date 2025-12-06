@@ -1,0 +1,679 @@
+{
+  "name": "NEW PROJECT",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 10
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1904,
+        -128
+      ],
+      "id": "320a2236-0d73-482a-8349-dc6851733bd7"
+    },
+    {
+      "parameters": {
+        "url": "https://weworkremotely.com/remote-jobs.rss",
+        "options": {}
+      },
+      "name": "Fetch WeWorkRemotely RSS",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [
+        -1680,
+        -320
+      ],
+      "id": "c0bd0981-abde-41ef-80bb-955c26538073"
+    },
+    {
+      "parameters": {
+        "url": "https://remoteok.com/remote-jobs.rss",
+        "options": {}
+      },
+      "name": "Fetch Remote.co RSS",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [
+        -1680,
+        -128
+      ],
+      "id": "c169a641-0430-436e-8371-15325bf2d2df"
+    },
+    {
+      "parameters": {
+        "url": "https://himalayas.app/jobs/rss",
+        "options": {}
+      },
+      "name": "Fetch Himalayas RSS",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [
+        -1680,
+        64
+      ],
+      "id": "656f9a2e-d0c7-4e12-a79b-0b777cf56031"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "job-title",
+              "name": "Job Title",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "company",
+              "name": "Company",
+              "value": "={{ $json.creator || $json['dc:creator'] || 'N/A' }}",
+              "type": "string"
+            },
+            {
+              "id": "location",
+              "name": "Location",
+              "value": "={{ $json.categories ? $json.categories.join(', ') : 'Remote' }}",
+              "type": "string"
+            },
+            {
+              "id": "source",
+              "name": "Source",
+              "value": "={{ $json.link.includes('weworkremotely') ? 'WeWorkRemotely' : $json.link.includes('remote.co') ? 'Remote.co' : 'Himalayas' }}",
+              "type": "string"
+            },
+            {
+              "id": "link",
+              "name": "Link",
+              "value": "={{ $json.link }}",
+              "type": "string"
+            },
+            {
+              "id": "published",
+              "name": "Published Date",
+              "value": "={{ $json.pubDate || $json.isoDate || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Normalize Job Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        -1008,
+        -128
+      ],
+      "id": "b9c755b7-5ed7-4eb7-9322-56b99886cbb5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-title",
+              "leftValue": "={{ $json['Job Title'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "has-link",
+              "leftValue": "={{ $json['Link'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "Filter Valid Jobs",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        -784,
+        -128
+      ],
+      "id": "49c3dac4-75c7-4acb-89d0-4d5c961e46cd"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1vumcv39v4SU6i_t2G9FeMAH2hh_Ip514RXyKIBNZJLQ",
+          "mode": "list",
+          "cachedResultName": "Job Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vumcv39v4SU6i_t2G9FeMAH2hh_Ip514RXyKIBNZJLQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vumcv39v4SU6i_t2G9FeMAH2hh_Ip514RXyKIBNZJLQ/edit#gid=0"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRangeA1",
+              "range": "F2:F"
+            }
+          }
+        }
+      },
+      "name": "Read Existing Links",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        -336,
+        -64
+      ],
+      "id": "129d9ee9-edc4-4c62-9319-7ecc2ab81692",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jyBVCE3mZBqNNV8b",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "Link",
+        "joinMode": "keepNonMatches",
+        "options": {}
+      },
+      "name": "Find New Jobs Only",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -128,
+        -128
+      ],
+      "id": "a297dd67-6b90-4ea4-8fac-53937e9c8a17"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-items",
+              "leftValue": "={{ $input.all().length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "If New Jobs Found",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        112,
+        -128
+      ],
+      "id": "8ed4dbf7-2053-4d6d-94e6-93d8f18df72d"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "date-added",
+              "name": "Date Added",
+              "value": "={{ $now.toFormat('yyyy-MM-dd HH:mm') }}",
+              "type": "string"
+            },
+            {
+              "id": "6312a861-173a-4905-87e2-30dee8e75348",
+              "name": "Job Title",
+              "value": "={{ $json['Job Title'] }}",
+              "type": "string"
+            },
+            {
+              "id": "95a36e0a-3cba-439f-b3cd-a6a02b807fb5",
+              "name": "Company ",
+              "value": "={{ $json['Company'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ad34868e-1833-43ee-a9eb-bb630e97365d",
+              "name": "Location",
+              "value": "={{ $json['Location'] }}",
+              "type": "string"
+            },
+            {
+              "id": "60fd92da-be5a-4a95-bdba-3da3ffaf9937",
+              "name": "Source",
+              "value": "={{ $json['Source'] }}",
+              "type": "string"
+            },
+            {
+              "id": "1937c713-813a-42e4-af2c-be6586395306",
+              "name": "Source",
+              "value": "={{ $json['Source'] }}",
+              "type": "string"
+            },
+            {
+              "id": "9f7b1c80-4298-456c-b692-002e2849276f",
+              "name": "Link",
+              "value": "={{ $json['Link'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": "",
+        "options": {}
+      },
+      "name": "Add Timestamp",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        336,
+        -224
+      ],
+      "id": "48e472a8-312a-4b96-b4c0-9d194a3c0348"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1vumcv39v4SU6i_t2G9FeMAH2hh_Ip514RXyKIBNZJLQ",
+          "mode": "list",
+          "cachedResultName": "Job Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vumcv39v4SU6i_t2G9FeMAH2hh_Ip514RXyKIBNZJLQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vumcv39v4SU6i_t2G9FeMAH2hh_Ip514RXyKIBNZJLQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {
+            "Date Added": "=={{ $json[\"Date Added\"] }}\n",
+            "Job Title ": "={{ $json[\"Job Title\"] }}\n",
+            "Company": "={{ $json[\"Company\"] }}\n"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date Added",
+              "displayName": "Date Added",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job Title ",
+              "displayName": "Job Title ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Link",
+              "displayName": "Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "name": "Append to Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        560,
+        -224
+      ],
+      "id": "3a82718c-0552-49ea-b295-0eb28591b8ae",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jyBVCE3mZBqNNV8b",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const jobs = $input.all().map(item => item.json);\n\nif (jobs.length === 0) {\n  return [{ json: { html: \"<p>No new jobs found.</p>\", count: 0 } }];\n}\n\nlet html = `\n<!DOCTYPE html>\n<html>\n<head>\n<style>\n  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #f5f5f5; }\n  .container { background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }\n  h2 { color: #2c3e50; margin: 0 0 10px 0; }\n  .summary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 25px; }\n  .summary h2 { color: white; }\n  .summary p { margin: 5px 0; opacity: 0.9; }\n  table { width: 100%; border-collapse: collapse; margin-top: 20px; }\n  th, td { padding: 14px; text-align: left; border-bottom: 1px solid #e0e0e0; }\n  th { background-color: #f8f9fa; color: #495057; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }\n  tr:hover { background-color: #f8f9fa; }\n  td { color: #333; font-size: 14px; }\n  a { color: #667eea; text-decoration: none; font-weight: 600; padding: 6px 12px; background: #f0f3ff; border-radius: 4px; display: inline-block; }\n  a:hover { background: #667eea; color: white; }\n  .source-badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }\n  .weworkremotely { background: #e3f2fd; color: #1976d2; }\n  .justremote { background: #f3e5f5; color: #7b1fa2; }\n  .himalayas { background: #e8f5e9; color: #388e3c; }\n  .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0; color: #9e9e9e; font-size: 12px; text-align: center; }\n</style>\n</head>\n<body>\n<div class=\"container\">\n<div class=\"summary\">\n  <h2>🎯 ${jobs.length} New Remote Job${jobs.length > 1 ? 's' : ''} Found!</h2>\n  <p>📅 ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>\n  <p>⏰ ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>\n</div>\n<table>\n  <thead>\n    <tr>\n      <th>Job Title</th>\n      <th>Company</th>\n      <th>Location</th>\n      <th>Source</th>\n      <th>Apply</th>\n    </tr>\n  </thead>\n  <tbody>\n`;\n\njobs.forEach(job => {\n  // Safe handling of potentially undefined fields\n  const jobTitle = job['Job Title'] || 'N/A';\n  const company = job['Company'] || 'N/A';\n  const location = job['Location'] || 'Remote';\n  const source = job['Source'] || 'Unknown';\n  const link = job['Link'] || '#';\n  \n  // Safe toLowerCase with fallback\n  const sourceClass = source ? source.toLowerCase().replace(/\\s/g, '').replace(/\\./g, '') : 'unknown';\n  \n  html += `\n    <tr>\n      <td><strong>${jobTitle}</strong></td>\n      <td>${company}</td>\n      <td>${location}</td>\n      <td><span class=\"source-badge ${sourceClass}\">${source}</span></td>\n      <td><a href=\"${link}\" target=\"_blank\">Apply Now →</a></td>\n    </tr>\n  `;\n});\n\nhtml += `\n  </tbody>\n</table>\n<div class=\"footer\">\n  <p>🤖 Automated by n8n Job Finder | Stay ahead in your job search!</p>\n</div>\n</div>\n</body>\n</html>\n`;\n\nreturn [{ json: { html: html, count: jobs.length } }];\n"
+      },
+      "name": "Build Email HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        -224
+      ],
+      "id": "da5b217a-4cb0-437d-a32c-d09d8ea3f99f"
+    },
+    {
+      "parameters": {
+        "sendTo": "decoders1013@gmail.com",
+        "subject": "=🔔 {{ $json.count }} New Remote Job{{ $json.count > 1 ? 's' : '' }} Found - {{ $now.toFormat('MMM dd, yyyy') }}",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "name": "Send Gmail Alert",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1008,
+        -224
+      ],
+      "id": "e58dfd1a-369c-44da-8bab-697277bd5347",
+      "webhookId": "f339c81e-984f-4c2b-ae85-a9c740e86628",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Hng7Go4RpEFDORSn",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "name": "No New Jobs",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        336,
+        -32
+      ],
+      "id": "20985c88-a279-4d78-846e-d12f74564762"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1232,
+        -144
+      ],
+      "id": "88837106-1554-4ffd-9c12-650655fc7ef1",
+      "name": "Merge",
+      "retryOnFail": true,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "compare": "selectedFields",
+        "fieldsToCompare": "Link",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        -128
+      ],
+      "id": "0fd6de46-07f5-4c17-af8b-e512698b051c",
+      "name": "Remove Duplicates1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch WeWorkRemotely RSS",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Remote.co RSS",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Himalayas RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch WeWorkRemotely RSS": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Remote.co RSS": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Fetch Himalayas RSS": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Normalize Job Data": {
+      "main": [
+        [
+          {
+            "node": "Filter Valid Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Valid Jobs": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Existing Links": {
+      "main": [
+        [
+          {
+            "node": "Find New Jobs Only",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Find New Jobs Only": {
+      "main": [
+        [
+          {
+            "node": "If New Jobs Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If New Jobs Found": {
+      "main": [
+        [
+          {
+            "node": "Add Timestamp",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No New Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Timestamp": {
+      "main": [
+        [
+          {
+            "node": "Append to Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append to Google Sheet": {
+      "main": [
+        [
+          {
+            "node": "Build Email HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Email HTML": {
+      "main": [
+        [
+          {
+            "node": "Send Gmail Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Normalize Job Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates1": {
+      "main": [
+        [
+          {
+            "node": "Find New Jobs Only",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read Existing Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "045fafac-6ab2-43ad-bd5b-efb9f7daa5ec",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f502f479e0200efa0e0ff235686c6edadb7346cbfea7d2137eaa5ff45567e849"
+  },
+  "id": "ES6cxxqdBw4HHt1t",
+  "tags": []
+}
