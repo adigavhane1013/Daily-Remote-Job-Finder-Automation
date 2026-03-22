@@ -99,6 +99,9 @@ An automated workflow built using **n8n** that fetches remote job listings from 
     Sends the email digest to the configured address. On failure, triggers a separate Gmail Failure Alert notification.
 
 ---
+## 🖼️ Workflow Preview
+
+![Daily Remote Job Finder Workflow](workflow_preview.png)
 
 ## 📂 Workflow Structure
 
